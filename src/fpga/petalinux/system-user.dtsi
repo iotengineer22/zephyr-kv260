@@ -1,0 +1,105 @@
+/include/ "system-conf.dtsi" 
+/ {
+      chosen {
+          bootargs = "console=ttyUSB0,115200 root=/dev/ram0 rw init_fatal_sh=1 cma=900M clk_ignore_unused";
+      };
+      
+      reserved-memory {
+      #address-cells = <0x02>;
+      #size-cells = <0x02>;
+      ranges;
+
+      rpu0vdev0vring: rpu0vdev0vring0@3ed40000 {
+          no-map;
+          reg = <0x00 0x3ed40000 0x00 0x4000>;
+      };
+
+      rpu0vdev0vring1: rpu0vdev0vring1@3ed44000 {
+          no-map;
+          reg = <0x00 0x3ed44000 0x00 0x4000>;
+      };
+
+      rpu0vdev0buffer: rpu0vdev0buffer@3ed48000 {
+          no-map;
+          reg = <0x00 0x3ed48000 0x00 0x100000>;
+      };
+
+      rproc: rproc@3ed00000 {
+          no-map;
+          reg = <0x00 0x3ed00000 0x00 0x40000>;
+      };
+  };
+
+  tcm_0a: tcm_0a@ffe00000 {
+      reg = <0x0 0xffe00000 0x0 0x10000>;
+      status = "okay";
+      compatible = "mmio-sram";
+      power-domains = <&zynqmp_firmware 15>;
+  };
+
+  tcm_0b: tcm_0b@ffe20000 {
+      no-map;
+      reg = <0x0 0xffe20000 0x0 0x10000>;
+      status = "okay";
+      compatible = "mmio-sram";
+      power-domains = <&zynqmp_firmware 16>;
+      };
+
+  r5fss@ff9a0000 {
+      compatible = "xlnx,zynqmp-r5fss";
+      xlnx,cluster-mode = <1>;
+      ranges;
+      reg = <0x0 0xFF9A0000 0x0 0x10000>;
+      status = "okay"; 
+      #address-cells = <0x2>;
+      #size-cells = <0x2>;
+
+      r5f_0: r5f@0 {
+          compatible = "xilinx,r5f";
+          #address-cells = <0x2>;
+          #size-cells = <0x2>;
+          ranges;
+          memory-region = <&rproc &rpu0vdev0buffer &rpu0vdev0vring &rpu0vdev0vring1>;
+          power-domains = <&zynqmp_firmware 7>;
+          mboxes = <&ipi_mailbox_rpu0 0>, <&ipi_mailbox_rpu0 1>;
+          mbox-names = "tx", "rx";
+                  tcm_0_a: tcm_0@ffe00000 {
+                      reg = <0x0 0xFFE00000 0x0 0x10000>;
+                      status = "okay";
+                      compatible = "mmio-sram";
+                      power-domains = <&zynqmp_firmware 15>;
+                  };
+                  tcm_0_b: tcm_0@ffe20000 {
+                      reg = <0x0 0xFFE20000 0x0 0x10000>;
+                      status = "okay";
+                      compatible = "mmio-sram";
+                      power-domains = <&zynqmp_firmware 16>;
+                  };
+             };
+      };
+
+  zynqmp_ipi1 {
+      compatible = "xlnx,zynqmp-ipi-mailbox";
+      interrupt-parent = <&gic>;
+      interrupts = <0 29 4>;
+      xlnx,ipi-id = <7>;
+      #address-cells = <1>;
+      #size-cells = <1>;
+      ranges;
+
+      /* APU<->RPU0 IPI mailbox controller */
+      ipi_mailbox_rpu0: mailbox@ff990600 {
+              compatible = "xlnx,zynqmp-ipi-dest-mailbox";
+          reg = <0xff990600 0x20>,
+                <0xff990620 0x20>,
+                <0xff9900c0 0x20>,
+                <0xff9900e0 0x20>;
+          reg-names = "local_request_region",
+                  "local_response_region",
+                  "remote_request_region",
+                  "remote_response_region";
+          #mbox-cells = <1>;
+          xlnx,ipi-id = <1>;
+      };
+  };
+};

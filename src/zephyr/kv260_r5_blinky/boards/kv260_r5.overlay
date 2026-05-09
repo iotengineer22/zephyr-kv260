@@ -1,0 +1,55 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+#include <zephyr/dt-bindings/gpio/gpio.h>
+
+/ {
+    aliases {
+        led0 = &led_0;
+        led1 = &led_1;
+        led2 = &led_2;
+        sw0 = &sw_0;
+    };
+
+    leds {
+        compatible = "gpio-leds";
+        led_0: led_0 {
+            gpios = <&axi_gpio_0 0 GPIO_ACTIVE_HIGH>;
+        };
+        led_1: led_1 {
+            gpios = <&axi_gpio_0 1 GPIO_ACTIVE_HIGH>;
+        };
+        led_2: led_2 {
+            gpios = <&axi_gpio_0 2 GPIO_ACTIVE_HIGH>;
+        };
+    };
+
+    buttons {
+        compatible = "gpio-keys";
+        sw_0: button_0 {
+            gpios = <&axi_gpio_1 0 GPIO_ACTIVE_HIGH>;
+        };
+    };
+};
+
+/* 
+ * Key point of the fix: 
+ * By describing it inside the &{/soc} node instead of the root, 
+ * the 32-bit address will be interpreted correctly.
+ */
+&{/soc} {
+    axi_gpio_0: gpio@b0000000 {
+        compatible = "xlnx,xps-gpio-1.00.a";
+        /* Address 0xb0000000, size 0x10000 described with 1 cell each */
+        reg = <0xb0000000 0x10000>;
+        status = "okay";
+        gpio-controller;
+        #gpio-cells = <2>;
+    };
+
+    axi_gpio_1: gpio@b0010000 {
+        compatible = "xlnx,xps-gpio-1.00.a";
+        reg = <0xb0010000 0x10000>;
+        status = "okay";
+        gpio-controller;
+        #gpio-cells = <2>;
+    };
+};

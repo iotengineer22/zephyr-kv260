@@ -1,0 +1,33 @@
+/* SPDX-License-Identifier: Apache-2.0 */
+#include <zephyr/dt-bindings/gpio/gpio.h>
+
+/ {
+    aliases {
+        led0 = &axi_gpio_0;
+        sw0 = &axi_gpio_1;
+    };
+};
+
+/* 
+ * Key point of the fix: 
+ * By describing it inside the &{/soc} node instead of the root, 
+ * the 32-bit address will be interpreted correctly.
+ */
+&{/soc} {
+    axi_gpio_0: gpio@b0000000 {
+        compatible = "xlnx,xps-gpio-1.00.a";
+        /* Address 0xb0000000, size 0x10000 described with 1 cell each */
+        reg = <0xb0000000 0x10000>;
+        status = "disabled";
+        gpio-controller;
+        #gpio-cells = <2>;
+    };
+
+    axi_gpio_1: gpio@b0010000 {
+        compatible = "xlnx,xps-gpio-1.00.a";
+        reg = <0xb0010000 0x10000>;
+        status = "disabled";
+        gpio-controller;
+        #gpio-cells = <2>;
+    };
+};
