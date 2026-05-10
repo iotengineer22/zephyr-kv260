@@ -1,0 +1,1 @@
+zephyr/soc/xlnx/zynqmp/arm_mpu_regions.c
